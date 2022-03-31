@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -18,7 +19,14 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-type Whisper struct{}
+type Whisper struct {
+	wg sync.WaitGroup
+}
+
+func (ws *Whisper) Close() {
+	ws.wg.Wait()
+	log.Println("Whisper closed")
+}
 
 func (ws *Whisper) HandleStream(s network.Stream) {
 	log.Println("Got a new stream!")
@@ -26,6 +34,7 @@ func (ws *Whisper) HandleStream(s network.Stream) {
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
 
+	ws.wg.Add(2)
 	go ws.ReadData(rw)
 	go ws.WriteData(rw)
 
@@ -33,6 +42,7 @@ func (ws *Whisper) HandleStream(s network.Stream) {
 }
 
 func (ws *Whisper) ReadData(rw *bufio.ReadWriter) {
+	defer ws.wg.Done()
 	for {
 		// Read line until \n
 		str, _ := rw.ReadString('\n')
@@ -50,6 +60,7 @@ func (ws *Whisper) ReadData(rw *bufio.ReadWriter) {
 }
 
 func (ws *Whisper) WriteData(rw *bufio.ReadWriter) {
+	defer ws.wg.Done()
 	stdReader := bufio.NewReader(os.Stdin)
 
 	for {

@@ -44,6 +44,7 @@ func main() {
 	}
 
 	ws := whisper.New()
+	defer ws.Close()
 
 	h, err := ws.MakeHost(*sourcePort, r)
 	if err != nil {
