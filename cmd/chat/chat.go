@@ -54,9 +54,9 @@ func main() {
 	}
 
 	if *dest == "" {
-		ws.StartPeer(ctx, h, ws.HandleStream)
+		ws.Listen(ctx, h, ws.HandleStream)
 	} else {
-		if _, err := ws.StartPeerAndConnect(ctx, h, *dest); err != nil {
+		if _, err := ws.Call(ctx, h, *dest); err != nil {
 			log.Println(err)
 			return
 		}

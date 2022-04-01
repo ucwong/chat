@@ -98,7 +98,7 @@ func (ws *Whisper) MakeHost(port int, randomness io.Reader) (host.Host, error) {
 	)
 }
 
-func (ws *Whisper) StartPeer(ctx context.Context, h host.Host, streamHandler network.StreamHandler) {
+func (ws *Whisper) Listen(ctx context.Context, h host.Host, streamHandler network.StreamHandler) {
 	// Set a function as stream handler.
 	// This function is called when a peer connects, and starts a stream with this protocol.
 	// Only applies on the receiving side.
@@ -124,7 +124,7 @@ func (ws *Whisper) StartPeer(ctx context.Context, h host.Host, streamHandler net
 	log.Println()
 }
 
-func (ws *Whisper) StartPeerAndConnect(ctx context.Context, h host.Host, destination string) (*bufio.ReadWriter, error) {
+func (ws *Whisper) Call(ctx context.Context, h host.Host, destination string) (*bufio.ReadWriter, error) {
 	log.Println("This node's multiaddresses:")
 	for _, la := range h.Addrs() {
 		log.Printf(" - %v\n", la)
