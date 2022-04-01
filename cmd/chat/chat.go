@@ -55,15 +55,15 @@ func main() {
 	if *dest == "" {
 		ws.StartPeer(ctx, h, ws.HandleStream)
 	} else {
-		rw, err := ws.StartPeerAndConnect(ctx, h, *dest)
+		_, err := ws.StartPeerAndConnect(ctx, h, *dest)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
 		// Create a thread to read and write data.
-		go ws.WriteData(rw)
-		go ws.ReadData(rw)
+		//go ws.WriteData(rw)
+		//go ws.ReadData(rw)
 
 	}
 

@@ -159,7 +159,13 @@ func (ws *Whisper) StartPeerAndConnect(ctx context.Context, h host.Host, destina
 	log.Println("Established connection to destination")
 
 	// Create a buffered stream so that read and writes are non blocking.
-	rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
+	/*rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
 
-	return rw, nil
+		ws.wg.Add(2)
+	        go ws.ReadData(rw)
+	        go ws.WriteData(rw)*/
+
+	ws.HandleStream(s)
+
+	return nil, nil
 }
