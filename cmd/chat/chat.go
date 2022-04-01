@@ -5,11 +5,12 @@ import (
 	"crypto/rand"
 	"flag"
 	"fmt"
-	"github.com/ucwong/chat/whisper"
 	"io"
 	"log"
 	mrand "math/rand"
 	"os"
+
+	"github.com/ucwong/chat/whisper"
 )
 
 func main() {
@@ -55,8 +56,7 @@ func main() {
 	if *dest == "" {
 		ws.StartPeer(ctx, h, ws.HandleStream)
 	} else {
-		_, err := ws.StartPeerAndConnect(ctx, h, *dest)
-		if err != nil {
+		if _, err := ws.StartPeerAndConnect(ctx, h, *dest); err != nil {
 			log.Println(err)
 			return
 		}
