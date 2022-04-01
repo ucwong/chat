@@ -20,12 +20,14 @@ import (
 )
 
 type Whisper struct {
-	wg sync.WaitGroup
+	wg     sync.WaitGroup
+	exitCh chan struct{}
 }
 
 func (ws *Whisper) Close() {
+	close(ws.exitCh)
 	ws.wg.Wait()
-	log.Println("Whisper closed")
+	log.Println("Whisper has been closed.")
 }
 
 func (ws *Whisper) HandleStream(s network.Stream) {
@@ -44,6 +46,8 @@ func (ws *Whisper) HandleStream(s network.Stream) {
 func (ws *Whisper) ReadData(rw *bufio.ReadWriter) {
 	defer ws.wg.Done()
 	for {
+		// TODO exitch
+
 		// Read line until \n
 		str, _ := rw.ReadString('\n')
 
@@ -64,6 +68,8 @@ func (ws *Whisper) WriteData(rw *bufio.ReadWriter) {
 	stdReader := bufio.NewReader(os.Stdin)
 
 	for {
+		// TODO exitch
+
 		fmt.Print("> ")
 		sendData, err := stdReader.ReadString('\n')
 		if err != nil {
@@ -77,9 +83,12 @@ func (ws *Whisper) WriteData(rw *bufio.ReadWriter) {
 }
 
 func New() *Whisper {
-	return &Whisper{}
+	whisper := &Whisper{
+		exitCh: make(chan struct{}),
+	}
+	return whisper
 }
-func (ws *Whisper) MakeHost(port int, randomness io.Reader) (host.Host, error) {
+func (ws *Whisper) Host(port int, randomness io.Reader) (host.Host, error) {
 	// Creates a new RSA key pair for this host.
 	prvKey, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, randomness)
 	if err != nil {

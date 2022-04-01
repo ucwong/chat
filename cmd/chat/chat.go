@@ -9,6 +9,8 @@ import (
 	"log"
 	mrand "math/rand"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/ucwong/chat/whisper"
 )
@@ -47,7 +49,7 @@ func main() {
 	ws := whisper.New()
 	defer ws.Close()
 
-	h, err := ws.MakeHost(*sourcePort, r)
+	h, err := ws.Host(*sourcePort, r)
 	if err != nil {
 		log.Println(err)
 		return
@@ -60,13 +62,9 @@ func main() {
 			log.Println(err)
 			return
 		}
-
-		// Create a thread to read and write data.
-		//go ws.WriteData(rw)
-		//go ws.ReadData(rw)
-
 	}
 
-	// Wait forever
-	select {}
+	var c = make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
 }
