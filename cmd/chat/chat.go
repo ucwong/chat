@@ -47,7 +47,6 @@ func main() {
 	}
 
 	ws := whisper.New()
-	defer ws.Close()
 
 	h, err := ws.Host(*sourcePort, r)
 	if err != nil {
@@ -67,4 +66,5 @@ func main() {
 	var c = make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
+	defer ws.Close()
 }

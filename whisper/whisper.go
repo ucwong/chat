@@ -21,7 +21,16 @@ import (
 
 type Whisper struct {
 	wg     sync.WaitGroup
+	rch    chan string
 	exitCh chan struct{}
+}
+
+func New() *Whisper {
+	whisper := &Whisper{
+		rch:    make(chan string),
+		exitCh: make(chan struct{}),
+	}
+	return whisper
 }
 
 func (ws *Whisper) Close() {
@@ -43,21 +52,32 @@ func (ws *Whisper) HandleStream(s network.Stream) {
 	// stream 's' will stay open until you close it (or the other side closes it).
 }
 
+func (ws *Whisper) read(rw *bufio.ReadWriter, ch chan string) {
+	str, _ := rw.ReadString('\n')
+	ch <- str
+}
+
 func (ws *Whisper) ReadData(rw *bufio.ReadWriter) {
 	defer ws.wg.Done()
+	log.Println("Read data channel start.")
+
 	for {
-		// TODO exitch
+		go ws.read(rw, ws.rch)
 
-		// Read line until \n
-		str, _ := rw.ReadString('\n')
-
-		if str == "" {
+		select {
+		case <-ws.exitCh:
+			log.Println("Read data channel exit.")
 			return
-		}
-		if str != "\n" {
-			// Green console colour: 	\x1b[32m
-			// Reset console colour: 	\x1b[0m
-			fmt.Printf("\x1b[32m%s\x1b[0m> ", str)
+		case str := <-ws.rch:
+			if str == "" {
+				//return
+				continue
+			}
+			if str != "\n" {
+				// Green console colour: 	\x1b[32m
+				// Reset console colour: 	\x1b[0m
+				fmt.Printf("\x1b[32m%s\x1b[0m> ", str)
+			}
 		}
 
 	}
@@ -67,27 +87,26 @@ func (ws *Whisper) WriteData(rw *bufio.ReadWriter) {
 	defer ws.wg.Done()
 	stdReader := bufio.NewReader(os.Stdin)
 
+	log.Println("Write data channel start.")
 	for {
-		// TODO exitch
-
-		fmt.Print("> ")
-		sendData, err := stdReader.ReadString('\n')
-		if err != nil {
-			log.Println(err)
+		select {
+		case <-ws.exitCh:
+			log.Println("Write data channel exit.")
 			return
+		default:
+			fmt.Print("> ")
+			sendData, err := stdReader.ReadString('\n')
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			rw.WriteString(fmt.Sprintf("%s\n", sendData))
+			rw.Flush()
 		}
-
-		rw.WriteString(fmt.Sprintf("%s\n", sendData))
-		rw.Flush()
 	}
 }
 
-func New() *Whisper {
-	whisper := &Whisper{
-		exitCh: make(chan struct{}),
-	}
-	return whisper
-}
 func (ws *Whisper) Host(port int, randomness io.Reader) (host.Host, error) {
 	// Creates a new RSA key pair for this host.
 	prvKey, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, randomness)
