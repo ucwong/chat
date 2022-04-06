@@ -62,6 +62,7 @@ func (ws *Whisper) ReadData(rw *bufio.ReadWriter) {
 	log.Println("Read data channel start.")
 
 	for {
+		// TODO
 		go ws.read(rw, ws.rch)
 
 		select {
