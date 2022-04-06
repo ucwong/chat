@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/libp2p/go-libp2p v0.18.1-0.20220331094520-e8d3df92f7a6
 	github.com/libp2p/go-libp2p-core v0.14.1-0.20220321053519-4a03a820b3ad
-	github.com/multiformats/go-multiaddr v0.5.0
+	github.com/multiformats/go-multiaddr v0.5.1-0.20220404162637-7830bb7303ed
 )
 
 require (
